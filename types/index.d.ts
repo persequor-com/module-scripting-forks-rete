@@ -9,7 +9,6 @@ import { NodeEditor } from './editor';
 import { Output } from './output';
 import { Socket } from './socket';
 import { Engine, Recursion } from './engine/index';
-
 export { Engine, Recursion } from './engine/index';
 export { Component } from './component';
 export { Control } from './control';
@@ -21,20 +20,18 @@ export { Node } from './node';
 export { NodeEditor } from './editor';
 export { Output } from './output';
 export { Socket } from './socket';
-
-console.log("USING LOCAL RETE")
-
-export default {
-    Engine,
-    Recursion,
-    Component,
-    Control,
-    Connection,
-    Emitter,
-    Input,
-    IO,
-    Node,
-    NodeEditor,
-    Output,
-    Socket
-}
+declare const _default: {
+    Engine: typeof Engine;
+    Recursion: typeof Recursion;
+    Component: typeof Component;
+    Control: typeof Control;
+    Connection: typeof Connection;
+    Emitter: typeof Emitter;
+    Input: typeof Input;
+    IO: typeof IO;
+    Node: typeof Node;
+    NodeEditor: typeof NodeEditor;
+    Output: typeof Output;
+    Socket: typeof Socket;
+};
+export default _default;
