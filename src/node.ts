@@ -22,7 +22,7 @@ export class Node {
         this.id = Node.incrementId();
     }
 
-    _add<T extends any>(list: Map<string, T>, item: T, prop: string) {
+    _add<T extends any>(list: Map<string, T>, item: any, prop: string) {
         if (list.has(item.key))
             throw new Error(`Item with key '${item.key}' already been added to the node`);
         if (item[prop] !== null)
@@ -92,7 +92,7 @@ export class Node {
 
     toJSON(): NodeData {
         const reduceIO = <T extends any>(list: Map<string, Input | Output>) => {
-            return Array.from(list).reduce<T>((obj, [key, io]) => {
+            return Array.from(list).reduce<T>((obj: any, [key, io]) => {
                 obj[key] = io.toJSON();
                 return obj;
             }, {} as any)

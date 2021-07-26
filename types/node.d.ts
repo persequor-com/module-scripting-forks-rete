@@ -18,7 +18,7 @@ export declare class Node {
     };
     static latestId: number;
     constructor(name: string);
-    _add<T extends any>(list: Map<string, T>, item: T, prop: string): void;
+    _add<T extends any>(list: Map<string, T>, item: any, prop: string): void;
     addControl(control: Control): this;
     removeControl(control: Control): void;
     addInput(input: Input): this;

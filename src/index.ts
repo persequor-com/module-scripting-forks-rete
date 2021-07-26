@@ -22,7 +22,7 @@ export { NodeEditor } from './editor';
 export { Output } from './output';
 export { Socket } from './socket';
 
-console.log("USING LOCAL RETE")
+console.log('USING LOCAL RETE')
 
 export default {
     Engine,

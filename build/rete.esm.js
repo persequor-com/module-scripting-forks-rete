@@ -78,7 +78,7 @@ function _defineProperty(obj, key, value) {
 
 function _objectSpread(target) {
   for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
+    var source = arguments[i] != null ? Object(arguments[i]) : {};
     var ownKeys = Object.keys(source);
 
     if (typeof Object.getOwnPropertySymbols === 'function') {
@@ -126,6 +126,19 @@ function _setPrototypeOf(o, p) {
   return _setPrototypeOf(o, p);
 }
 
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function _assertThisInitialized(self) {
   if (self === void 0) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -140,6 +153,25 @@ function _possibleConstructorReturn(self, call) {
   }
 
   return _assertThisInitialized(self);
+}
+
+function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+  return function _createSuperInternal() {
+    var Super = _getPrototypeOf(Derived),
+        result;
+
+    if (hasNativeReflectConstruct) {
+      var NewTarget = _getPrototypeOf(this).constructor;
+
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return _possibleConstructorReturn(this, result);
+  };
 }
 
 function _superPropBase(object, property) {
@@ -173,19 +205,15 @@ function _get(target, property, receiver) {
 }
 
 function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
 
 function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
 }
 
 function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  }
+  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
 }
 
 function _arrayWithHoles(arr) {
@@ -193,17 +221,21 @@ function _arrayWithHoles(arr) {
 }
 
 function _iterableToArray(iter) {
-  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
 }
 
 function _iterableToArrayLimit(arr, i) {
+  var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
+
+  if (_i == null) return;
   var _arr = [];
   var _n = true;
   var _d = false;
-  var _e = undefined;
+
+  var _s, _e;
 
   try {
-    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+    for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
       _arr.push(_s.value);
 
       if (i && _arr.length === i) break;
@@ -222,12 +254,86 @@ function _iterableToArrayLimit(arr, i) {
   return _arr;
 }
 
+function _unsupportedIterableToArray(o, minLen) {
+  if (!o) return;
+  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+  var n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === "Object" && o.constructor) n = o.constructor.name;
+  if (n === "Map" || n === "Set") return Array.from(o);
+  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+}
+
+function _arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length) len = arr.length;
+
+  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+  return arr2;
+}
+
 function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance");
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
 function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+
+function _createForOfIteratorHelper(o, allowArrayLike) {
+  var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+
+  if (!it) {
+    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it) o = it;
+      var i = 0;
+
+      var F = function () {};
+
+      return {
+        s: F,
+        n: function () {
+          if (i >= o.length) return {
+            done: true
+          };
+          return {
+            done: false,
+            value: o[i++]
+          };
+        },
+        e: function (e) {
+          throw e;
+        },
+        f: F
+      };
+    }
+
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var normalCompletion = true,
+      didErr = false,
+      err;
+  return {
+    s: function () {
+      it = it.call(o);
+    },
+    n: function () {
+      var step = it.next();
+      normalCompletion = step.done;
+      return step;
+    },
+    e: function (e) {
+      didErr = true;
+      err = e;
+    },
+    f: function () {
+      try {
+        if (!normalCompletion && it.return != null) it.return();
+      } finally {
+        if (didErr) throw err;
+      }
+    }
+  };
 }
 
 var Component = function Component(name) {
@@ -242,9 +348,7 @@ var Component = function Component(name) {
   this.name = name;
 };
 
-var Node =
-/*#__PURE__*/
-function () {
+var Node = /*#__PURE__*/function () {
   function Node(name) {
     _classCallCheck(this, Node);
 
@@ -386,17 +490,17 @@ function () {
 
 _defineProperty(Node, "latestId", 0);
 
-var Component$1 =
-/*#__PURE__*/
-function (_ComponentWorker) {
+var Component$1 = /*#__PURE__*/function (_ComponentWorker) {
   _inherits(Component, _ComponentWorker);
+
+  var _super = _createSuper(Component);
 
   function Component(name) {
     var _this;
 
     _classCallCheck(this, Component);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Component).call(this, name));
+    _this = _super.call(this, name);
 
     _defineProperty(_assertThisInitialized(_this), "editor", null);
 
@@ -408,9 +512,7 @@ function (_ComponentWorker) {
   _createClass(Component, [{
     key: "build",
     value: function () {
-      var _build = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee(node) {
+      var _build = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(node) {
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -438,9 +540,7 @@ function (_ComponentWorker) {
   }, {
     key: "createNode",
     value: function () {
-      var _createNode = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee2() {
+      var _createNode = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
         var data,
             node,
             _args2 = arguments;
@@ -476,9 +576,7 @@ function (_ComponentWorker) {
   return Component;
 }(Component);
 
-var Connection =
-/*#__PURE__*/
-function () {
+var Connection = /*#__PURE__*/function () {
   function Connection(output, input) {
     _classCallCheck(this, Connection);
 
@@ -505,9 +603,7 @@ function () {
   return Connection;
 }();
 
-var Control =
-/*#__PURE__*/
-function () {
+var Control = /*#__PURE__*/function () {
   function Control(key) {
     _classCallCheck(this, Control);
 
@@ -545,9 +641,7 @@ function () {
   return Control;
 }();
 
-var Emitter =
-/*#__PURE__*/
-function () {
+var Emitter = /*#__PURE__*/function () {
   function Emitter(events) {
     _classCallCheck(this, Emitter);
 
@@ -564,19 +658,36 @@ function () {
       var _this = this;
 
       var events = names instanceof Array ? names : names.split(' ');
+      var unsubscribeMap = {};
       events.forEach(function (name) {
         if (!_this.events[name]) throw new Error("The event ".concat(name, " does not exist"));
 
         _this.events[name].push(handler);
+
+        unsubscribeMap[name] = function () {
+          var index = _this.events[name].length - 1;
+
+          _this.events[name].splice(index, 1);
+        };
       });
-      return this;
+      return function () {
+        Object.values(unsubscribeMap).forEach(function (f) {
+          return f();
+        });
+      };
     }
   }, {
     key: "trigger",
     value: function trigger(name) {
+      var _this2 = this;
+
       var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       if (!(name in this.events)) throw new Error("The event ".concat(name, " cannot be triggered"));
       return this.events[name].reduce(function (r, e) {
+        if (name === 'run') {
+          console.log(_this2.events.run);
+        }
+
         return e(params) !== false && r;
       }, true); // return false if at least one event is false        
     }
@@ -596,9 +707,7 @@ function () {
   return Emitter;
 }();
 
-var IO =
-/*#__PURE__*/
-function () {
+var IO = /*#__PURE__*/function () {
   function IO(key, name, socket, multiConns) {
     _classCallCheck(this, IO);
 
@@ -641,10 +750,10 @@ function () {
   return IO;
 }();
 
-var Input =
-/*#__PURE__*/
-function (_IO) {
+var Input = /*#__PURE__*/function (_IO) {
   _inherits(Input, _IO);
+
+  var _super = _createSuper(Input);
 
   function Input(key, title, socket) {
     var _this;
@@ -653,7 +762,7 @@ function (_IO) {
 
     _classCallCheck(this, Input);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Input).call(this, key, title, socket, multiConns));
+    _this = _super.call(this, key, title, socket, multiConns);
 
     _defineProperty(_assertThisInitialized(_this), "control", null);
 
@@ -701,9 +810,7 @@ function (_IO) {
   return Input;
 }(IO);
 
-var Validator =
-/*#__PURE__*/
-function () {
+var Validator = /*#__PURE__*/function () {
   function Validator() {
     _classCallCheck(this, Validator);
   }
@@ -738,17 +845,17 @@ function () {
   return Validator;
 }();
 
-var Context =
-/*#__PURE__*/
-function (_Emitter) {
+var Context = /*#__PURE__*/function (_Emitter) {
   _inherits(Context, _Emitter);
+
+  var _super = _createSuper(Context);
 
   function Context(id, events) {
     var _this;
 
     _classCallCheck(this, Context);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Context).call(this, events));
+    _this = _super.call(this, events);
 
     _defineProperty(_assertThisInitialized(_this), "id", void 0);
 
@@ -794,9 +901,7 @@ function listenWindow(event, handler) {
   };
 }
 
-var Drag =
-/*#__PURE__*/
-function () {
+var Drag = /*#__PURE__*/function () {
   function Drag(el) {
     var onTranslate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function (_x, _y, _e) {};
     var onStart = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function (_e) {};
@@ -859,9 +964,7 @@ function () {
   return Drag;
 }();
 
-var Zoom =
-/*#__PURE__*/
-function () {
+var Zoom = /*#__PURE__*/function () {
   function Zoom(container, el, intensity, onzoom) {
     _classCallCheck(this, Zoom);
 
@@ -895,6 +998,12 @@ function () {
   }
 
   _createClass(Zoom, [{
+    key: "translating",
+    get: function get() {
+      // is translating while zoom (works on multitouch)
+      return this.pointers.length >= 2;
+    }
+  }, {
     key: "wheel",
     value: function wheel(e) {
       e.preventDefault();
@@ -974,28 +1083,22 @@ function () {
       var oy = (rect.top - e.clientY) * delta;
       this.onzoom(delta, ox, oy, 'dblclick');
     }
-  }, {
-    key: "translating",
-    get: function get() {
-      // is translating while zoom (works on multitouch)
-      return this.pointers.length >= 2;
-    }
   }]);
 
   return Zoom;
 }();
 
-var Area =
-/*#__PURE__*/
-function (_Emitter) {
+var Area = /*#__PURE__*/function (_Emitter) {
   _inherits(Area, _Emitter);
+
+  var _super = _createSuper(Area);
 
   function Area(container, emitter) {
     var _this;
 
     _classCallCheck(this, Area);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Area).call(this, emitter));
+    _this = _super.call(this, emitter);
 
     _defineProperty(_assertThisInitialized(_this), "el", void 0);
 
@@ -1126,17 +1229,17 @@ function (_Emitter) {
   return Area;
 }(Emitter);
 
-var ConnectionView =
-/*#__PURE__*/
-function (_Emitter) {
+var ConnectionView = /*#__PURE__*/function (_Emitter) {
   _inherits(ConnectionView, _Emitter);
+
+  var _super = _createSuper(ConnectionView);
 
   function ConnectionView(connection, inputNode, outputNode, emitter) {
     var _this;
 
     _classCallCheck(this, ConnectionView);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(ConnectionView).call(this, emitter));
+    _this = _super.call(this, emitter);
 
     _defineProperty(_assertThisInitialized(_this), "connection", void 0);
 
@@ -1191,17 +1294,17 @@ function (_Emitter) {
   return ConnectionView;
 }(Emitter);
 
-var ControlView =
-/*#__PURE__*/
-function (_Emitter) {
+var ControlView = /*#__PURE__*/function (_Emitter) {
   _inherits(ControlView, _Emitter);
+
+  var _super = _createSuper(ControlView);
 
   function ControlView(el, control, emitter) {
     var _this;
 
     _classCallCheck(this, ControlView);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(ControlView).call(this, emitter));
+    _this = _super.call(this, emitter);
 
     _this.trigger('rendercontrol', {
       el: el,
@@ -1214,10 +1317,10 @@ function (_Emitter) {
   return ControlView;
 }(Emitter);
 
-var SocketView =
-/*#__PURE__*/
-function (_Emitter) {
+var SocketView = /*#__PURE__*/function (_Emitter) {
   _inherits(SocketView, _Emitter);
+
+  var _super = _createSuper(SocketView);
 
   function SocketView(el, type, io, node, emitter) {
     var _this$trigger;
@@ -1226,7 +1329,7 @@ function (_Emitter) {
 
     _classCallCheck(this, SocketView);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(SocketView).call(this, emitter));
+    _this = _super.call(this, emitter);
 
     _defineProperty(_assertThisInitialized(_this), "el", void 0);
 
@@ -1260,17 +1363,17 @@ function (_Emitter) {
   return SocketView;
 }(Emitter);
 
-var NodeView =
-/*#__PURE__*/
-function (_Emitter) {
+var NodeView = /*#__PURE__*/function (_Emitter) {
   _inherits(NodeView, _Emitter);
+
+  var _super = _createSuper(NodeView);
 
   function NodeView(node, component, emitter) {
     var _this;
 
     _classCallCheck(this, NodeView);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(NodeView).call(this, emitter));
+    _this = _super.call(this, emitter);
 
     _defineProperty(_assertThisInitialized(_this), "node", void 0);
 
@@ -1424,17 +1527,17 @@ function (_Emitter) {
   return NodeView;
 }(Emitter);
 
-var EditorView =
-/*#__PURE__*/
-function (_Emitter) {
+var EditorView = /*#__PURE__*/function (_Emitter) {
   _inherits(EditorView, _Emitter);
+
+  var _super = _createSuper(EditorView);
 
   function EditorView(container, components, emitter) {
     var _this;
 
     _classCallCheck(this, EditorView);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(EditorView).call(this, emitter));
+    _this = _super.call(this, emitter);
 
     _defineProperty(_assertThisInitialized(_this), "container", void 0);
 
@@ -1551,9 +1654,7 @@ function (_Emitter) {
   return EditorView;
 }(Emitter);
 
-var Selected =
-/*#__PURE__*/
-function () {
+var Selected = /*#__PURE__*/function () {
   function Selected() {
     _classCallCheck(this, Selected);
 
@@ -1604,15 +1705,15 @@ var Events = function Events(handlers) {
   }, handlers);
 };
 
-var EditorEvents =
-/*#__PURE__*/
-function (_Events) {
+var EditorEvents = /*#__PURE__*/function (_Events) {
   _inherits(EditorEvents, _Events);
+
+  var _super = _createSuper(EditorEvents);
 
   function EditorEvents() {
     _classCallCheck(this, EditorEvents);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(EditorEvents).call(this, {
+    return _super.call(this, {
       nodecreate: [],
       nodecreated: [],
       noderemove: [],
@@ -1648,23 +1749,23 @@ function (_Events) {
       "export": [],
       process: [],
       clear: []
-    }));
+    });
   }
 
   return EditorEvents;
 }(Events);
 
-var NodeEditor =
-/*#__PURE__*/
-function (_Context) {
+var NodeEditor = /*#__PURE__*/function (_Context) {
   _inherits(NodeEditor, _Context);
+
+  var _super = _createSuper(NodeEditor);
 
   function NodeEditor(id, container) {
     var _this;
 
     _classCallCheck(this, NodeEditor);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(NodeEditor).call(this, id, new EditorEvents()));
+    _this = _super.call(this, id, new EditorEvents());
 
     _defineProperty(_assertThisInitialized(_this), "nodes", []);
 
@@ -1827,9 +1928,7 @@ function (_Context) {
   }, {
     key: "fromJSON",
     value: function () {
-      var _fromJSON = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee2(json) {
+      var _fromJSON = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(json) {
         var _this4 = this;
 
         var nodes;
@@ -1848,12 +1947,8 @@ function (_Context) {
                 nodes = {};
                 _context2.prev = 3;
                 _context2.next = 6;
-                return Promise.all(Object.keys(json.nodes).map(
-                /*#__PURE__*/
-                function () {
-                  var _ref3 = _asyncToGenerator(
-                  /*#__PURE__*/
-                  regeneratorRuntime.mark(function _callee(id) {
+                return Promise.all(Object.keys(json.nodes).map( /*#__PURE__*/function () {
+                  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(id) {
                     var node, component;
                     return regeneratorRuntime.wrap(function _callee$(_context) {
                       while (1) {
@@ -1933,17 +2028,17 @@ function (_Context) {
   return NodeEditor;
 }(Context);
 
-var Output =
-/*#__PURE__*/
-function (_IO) {
+var Output = /*#__PURE__*/function (_IO) {
   _inherits(Output, _IO);
+
+  var _super = _createSuper(Output);
 
   function Output(key, title, socket) {
     var multiConns = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
 
     _classCallCheck(this, Output);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(Output).call(this, key, title, socket, multiConns));
+    return _super.call(this, key, title, socket, multiConns);
   }
 
   _createClass(Output, [{
@@ -1987,9 +2082,7 @@ function (_IO) {
   return Output;
 }(IO);
 
-var Socket =
-/*#__PURE__*/
-function () {
+var Socket = /*#__PURE__*/function () {
   function Socket(name) {
     var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
@@ -2027,9 +2120,7 @@ function intersect(array1, array2) {
   });
 }
 
-var Recursion =
-/*#__PURE__*/
-function () {
+var Recursion = /*#__PURE__*/function () {
   function Recursion(nodes) {
     _classCallCheck(this, Recursion);
 
@@ -2056,30 +2147,21 @@ function () {
     value: function findSelf(list, inputNodes) {
       var inters = intersect(list, inputNodes);
       if (inters.length) return inters[0];
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+
+      var _iterator = _createForOfIteratorHelper(inputNodes),
+          _step;
 
       try {
-        for (var _iterator = inputNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var node = _step.value;
           var l = [node].concat(_toConsumableArray(list));
           var inter = this.findSelf(l, this.extractInputNodes(node));
           if (inter) return inter;
         }
       } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _iterator.e(err);
       } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
+        _iterator.f();
       }
 
       return null;
@@ -2092,29 +2174,20 @@ function () {
       var nodesArr = Object.keys(this.nodes).map(function (id) {
         return _this2.nodes[id];
       });
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+
+      var _iterator2 = _createForOfIteratorHelper(nodesArr),
+          _step2;
 
       try {
-        for (var _iterator2 = nodesArr[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
           var node = _step2.value;
           var inters = this.findSelf([node], this.extractInputNodes(node));
           if (inters) return inters;
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _iterator2.e(err);
       } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-            _iterator2["return"]();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
+        _iterator2.f();
       }
 
       return null;
@@ -2130,31 +2203,31 @@ var State = {
   ABORT: 2
 };
 
-var EngineEvents =
-/*#__PURE__*/
-function (_Events) {
+var EngineEvents = /*#__PURE__*/function (_Events) {
   _inherits(EngineEvents, _Events);
+
+  var _super = _createSuper(EngineEvents);
 
   function EngineEvents() {
     _classCallCheck(this, EngineEvents);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(EngineEvents).call(this, {}));
+    return _super.call(this, {});
   }
 
   return EngineEvents;
 }(Events);
 
-var Engine =
-/*#__PURE__*/
-function (_Context) {
+var Engine = /*#__PURE__*/function (_Context) {
   _inherits(Engine, _Context);
+
+  var _super = _createSuper(Engine);
 
   function Engine(id) {
     var _this;
 
     _classCallCheck(this, Engine);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Engine).call(this, id, new EngineEvents()));
+    _this = _super.call(this, id, new EngineEvents());
 
     _defineProperty(_assertThisInitialized(_this), "args", []);
 
@@ -2179,9 +2252,7 @@ function (_Context) {
   }, {
     key: "throwError",
     value: function () {
-      var _throwError = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee(message) {
+      var _throwError = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(message) {
         var data,
             _args = arguments;
         return regeneratorRuntime.wrap(function _callee$(_context) {
@@ -2246,9 +2317,7 @@ function (_Context) {
   }, {
     key: "abort",
     value: function () {
-      var _abort = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee2() {
+      var _abort = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
         var _this2 = this;
 
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
@@ -2283,9 +2352,7 @@ function (_Context) {
   }, {
     key: "lock",
     value: function () {
-      var _lock = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee3(node) {
+      var _lock = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(node) {
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
@@ -2322,9 +2389,7 @@ function (_Context) {
   }, {
     key: "extractInputData",
     value: function () {
-      var _extractInputData = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee5(node) {
+      var _extractInputData = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(node) {
         var _this3 = this;
 
         var obj, _i, _Object$keys, key, input, conns, connData;
@@ -2346,12 +2411,8 @@ function (_Context) {
                 input = node.inputs[key];
                 conns = input.connections;
                 _context5.next = 8;
-                return Promise.all(conns.map(
-                /*#__PURE__*/
-                function () {
-                  var _ref = _asyncToGenerator(
-                  /*#__PURE__*/
-                  regeneratorRuntime.mark(function _callee4(c) {
+                return Promise.all(conns.map( /*#__PURE__*/function () {
+                  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(c) {
                     var prevNode, outputs;
                     return regeneratorRuntime.wrap(function _callee4$(_context4) {
                       while (1) {
@@ -2419,9 +2480,7 @@ function (_Context) {
   }, {
     key: "processWorker",
     value: function () {
-      var _processWorker = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee6(node) {
+      var _processWorker = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(node) {
         var inputData, component, outputData;
         return regeneratorRuntime.wrap(function _callee6$(_context6) {
           while (1) {
@@ -2468,9 +2527,7 @@ function (_Context) {
   }, {
     key: "processNode",
     value: function () {
-      var _processNode = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee7(node) {
+      var _processNode = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(node) {
         return regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
@@ -2519,9 +2576,7 @@ function (_Context) {
   }, {
     key: "forwardProcess",
     value: function () {
-      var _forwardProcess = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee10(node) {
+      var _forwardProcess = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(node) {
         var _this4 = this;
 
         return regeneratorRuntime.wrap(function _callee10$(_context10) {
@@ -2537,12 +2592,8 @@ function (_Context) {
 
               case 2:
                 _context10.next = 4;
-                return Promise.all(Object.keys(node.outputs).map(
-                /*#__PURE__*/
-                function () {
-                  var _ref2 = _asyncToGenerator(
-                  /*#__PURE__*/
-                  regeneratorRuntime.mark(function _callee9(key) {
+                return Promise.all(Object.keys(node.outputs).map( /*#__PURE__*/function () {
+                  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(key) {
                     var output;
                     return regeneratorRuntime.wrap(function _callee9$(_context9) {
                       while (1) {
@@ -2550,12 +2601,8 @@ function (_Context) {
                           case 0:
                             output = node.outputs[key];
                             _context9.next = 3;
-                            return Promise.all(output.connections.map(
-                            /*#__PURE__*/
-                            function () {
-                              var _ref3 = _asyncToGenerator(
-                              /*#__PURE__*/
-                              regeneratorRuntime.mark(function _callee8(c) {
+                            return Promise.all(output.connections.map( /*#__PURE__*/function () {
+                              var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(c) {
                                 var nextNode;
                                 return regeneratorRuntime.wrap(function _callee8$(_context8) {
                                   while (1) {
@@ -2628,9 +2675,7 @@ function (_Context) {
   }, {
     key: "validate",
     value: function () {
-      var _validate = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee11(data) {
+      var _validate = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(data) {
         var checking, recursion, recurrentNode;
         return regeneratorRuntime.wrap(function _callee11$(_context11) {
           while (1) {
@@ -2684,9 +2729,7 @@ function (_Context) {
   }, {
     key: "processStartNode",
     value: function () {
-      var _processStartNode = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee12(id) {
+      var _processStartNode = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(id) {
         var startNode;
         return regeneratorRuntime.wrap(function _callee12$(_context12) {
           while (1) {
@@ -2738,9 +2781,7 @@ function (_Context) {
   }, {
     key: "processUnreachable",
     value: function () {
-      var _processUnreachable = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee13() {
+      var _processUnreachable = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee13() {
         var data, i, node;
         return regeneratorRuntime.wrap(function _callee13$(_context13) {
           while (1) {
@@ -2792,9 +2833,7 @@ function (_Context) {
   }, {
     key: "process",
     value: function () {
-      var _process = _asyncToGenerator(
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee14(data) {
+      var _process = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee14(data) {
         var startId,
             _len,
             args,
@@ -2859,7 +2898,7 @@ function (_Context) {
   return Engine;
 }(Context);
 
-console.log("USING LOCAL RETE");
+console.log('USING LOCAL RETE');
 var index = {
   Engine: Engine,
   Recursion: Recursion,

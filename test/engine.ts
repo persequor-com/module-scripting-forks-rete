@@ -65,6 +65,7 @@ describe('Engine', () => {
 
         describe('process without abort', () => {
             let cw = console.warn;
+            
             before(() => console.warn = () => {})
             after(() => console.warn = cw)
 
@@ -78,7 +79,7 @@ describe('Engine', () => {
 
         it('process start node', async () => {
             const correctId = Object.keys(addNumbersData.nodes)[0];
-            const wrongId = Number.POSITIVE_INFINITY;
+            // const wrongId = Number.POSITIVE_INFINITY;
 
             assert.strictEqual(await engine.process(addNumbersData as any, correctId), 'success')
             // assert.strictEqual(await engine.process(addNumbersData as any, wrongId), 'error')
