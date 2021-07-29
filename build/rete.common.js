@@ -683,15 +683,9 @@ var Emitter = /*#__PURE__*/function () {
   }, {
     key: "trigger",
     value: function trigger(name) {
-      var _this2 = this;
-
       var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       if (!(name in this.events)) throw new Error("The event ".concat(name, " cannot be triggered"));
       return this.events[name].reduce(function (r, e) {
-        if (name === 'run') {
-          console.log(_this2.events.run);
-        }
-
         return e(params) !== false && r;
       }, true); // return false if at least one event is false        
     }
