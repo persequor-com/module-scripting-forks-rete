@@ -9,9 +9,8 @@ import { Output } from './output';
 import { Selected } from './selected';
 import { Validator } from './core/validator';
 import { listenWindow } from './view/utils';
-import { EditorEvents, EventsTypes } from './events';
-
-export class NodeEditor extends Context<EventsTypes> {
+import { EditorEvents, EventsTypes as DefaultEventsTypes } from './events';
+export class NodeEditor<EventsTypes = any> extends Context<DefaultEventsTypes & EventsTypes> {
 
     nodes: Node[] = [];
     selected = new Selected();

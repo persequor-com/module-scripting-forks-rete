@@ -7,8 +7,8 @@ import { Input } from './input';
 import { Node } from './node';
 import { Output } from './output';
 import { Selected } from './selected';
-import { EventsTypes } from './events';
-export declare class NodeEditor extends Context<EventsTypes> {
+import { EventsTypes as DefaultEventsTypes } from './events';
+export declare class NodeEditor<EventsTypes = any> extends Context<DefaultEventsTypes & EventsTypes> {
     nodes: Node[];
     selected: Selected;
     view: EditorView;
