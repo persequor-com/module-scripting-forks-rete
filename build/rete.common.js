@@ -2874,7 +2874,6 @@ function (_Context) {
   return Engine;
 }(Context);
 
-console.log('USING LOCAL RETE');
 var index = {
   Engine: Engine,
   Recursion: Recursion,
